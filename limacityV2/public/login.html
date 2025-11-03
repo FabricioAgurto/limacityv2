@@ -1,0 +1,27 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Iniciar sesión — LimaCity RP</title><link rel="stylesheet" href="/assets/styles.css">
+<style>.auth{min-height:100vh;display:grid;place-items:center;background:radial-gradient(900px 400px at 10% -10%,rgba(124,92,255,.18),transparent)}
+form{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;min-width:320px}.row{margin:8px 0}.row-actions{display:flex;gap:10px}</style>
+</head><body><div class="auth">
+<form id="f"><h2>Iniciar sesión</h2>
+  <div class="row"><label>Email</label><input id="email" type="email" required placeholder="correo@ejemplo.com"></div>
+  <div class="row"><label>Contraseña</label><input id="pw" type="password" required placeholder="••••••••"></div>
+  <div class="row-actions"><button class="btn btn-primary" type="submit">Entrar</button><button class="btn" id="reg">Registrarse</button></div>
+  <p class="muted" style="margin-top:8px">Al ingresar aceptas las normas del servidor.</p>
+</form></div>
+<script>
+const f=document.getElementById('f');const reg=document.getElementById('reg');
+f.addEventListener('submit', async (e)=>{e.preventDefault();
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('pw').value;
+  const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+  const data=await r.json(); if(!r.ok){alert(data.error||'Error');return;}
+  localStorage.setItem('access_token', data.token); location.href='/dashboard.html';});
+reg.addEventListener('click', async (e)=>{e.preventDefault();
+  const email=prompt('Email para registro:'); const password=prompt('Contraseña:');
+  if(!email||!password) return;
+  const r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+  const data=await r.json(); if(!r.ok){alert(data.error||'Error');return;}
+  alert('Registrado. Ahora inicia sesión.');});
+</script></body></html>

@@ -1,0 +1,58 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>LimaCity RP — Noticias</title><link rel="stylesheet" href="/assets/styles.css">
+</head><body>
+<header><div class="nav container">
+  <div class="brand"><span class="dot"></span><span>LimaCity RP</span></div>
+  <div class="actions">
+    <a class="btn" href="/normativas.html">Ver normativas</a>
+    <a class="btn" href="/tienda.html">Tienda</a>
+    <a class="btn" href="/miembros.html">Miembros</a>
+    <a class="btn" href="https://discord.gg/" target="_blank" rel="noopener">Discord</a>
+    <span id="badge-admin" class="badge" style="display:none;">👑 Admin</span>
+    <a id="btn-admin" class="btn" href="/dashboard.html" style="display:none">Panel admin</a>
+    <a id="btn-login" class="btn btn-primary" href="/login.html" style="display:none">Iniciar sesión</a>
+</div>
+</div></header>
+<section class="hero"><div class="container">
+  <div class="kicker">Comunidad GTA V • FiveM</div>
+  <h1>Noticias y comunicados</h1>
+  <p>Actualizaciones oficiales, eventos y cambios en normativas.</p>
+</div></section>
+<main class="container"><div id="news" class="grid"></div></main>
+<footer class="footer">© LimaCity RP — Todos los derechos reservados</footer>
+<script>
+(async ()=>{
+  const token = localStorage.getItem('access_token') || '';
+  const meRes = await fetch('/api/auth/me', { headers: token ? { 'Authorization':'Bearer '+token } : {} });
+  const { user } = await meRes.json();
+  const btnAdmin = document.getElementById('btn-admin');
+  const btnLogin = document.getElementById('btn-login');
+  const badge = document.getElementById('badge-admin');
+  if (user) {
+    btnLogin.style.display='none';
+    const isStaff = (user.roles||[]).some(r => r==='admin'||r==='editor');
+    if (isStaff) btnAdmin.style.display='inline-flex';
+    if ((user.roles||[]).includes('admin')) badge.style.display='inline-flex';
+  } else { btnLogin.style.display='inline-flex'; }
+
+  const r = await fetch('/api/news/list');
+  const { items } = await r.json();
+  const root = document.getElementById('news');
+  root.innerHTML = '';
+  if(!items || !items.length){
+    const empty = document.createElement('div');
+    empty.className = 'section';
+    empty.innerHTML = '<div class="muted">No hay noticias publicadas por ahora.</div>';
+    root.appendChild(empty);
+  } else {
+    for(const n of items){
+      const el = document.createElement('article');
+      el.className = 'card';
+      el.innerHTML = `<div class="kicker">${new Date(n.created_at).toLocaleString()}</div><h3>${n.title}</h3><p>${n.body}</p>`;
+      root.appendChild(el);
+    }
+  }
+})();
+</script>
+</body></html>

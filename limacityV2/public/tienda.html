@@ -1,0 +1,55 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Tienda — LimaCity RP</title><link rel="stylesheet" href="/assets/styles.css"></head><body>
+<header><div class="nav container">
+  <div class="brand"><span class="dot"></span><span>LimaCity RP</span></div>
+  <div class="actions">
+    <a class="btn" href="/normativas.html">Ver normativas</a>
+    <a class="btn" href="/tienda.html">Tienda</a>
+    <a class="btn" href="/miembros.html">Miembros</a>
+    <a class="btn" href="https://discord.gg/" target="_blank" rel="noopener">Discord</a>
+    <span id="badge-admin" class="badge" style="display:none;">👑 Admin</span>
+    <a id="btn-admin" class="btn" href="/dashboard.html" style="display:none">Panel admin</a>
+    <a id="btn-login" class="btn btn-primary" href="/login.html" style="display:none">Iniciar sesión</a>
+</div>
+</div></header>
+<section class="hero"><div class="container">
+  <div class="kicker">Economía del servidor</div>
+  <h1>Tienda oficial</h1>
+  <p>Compra paquetes, colores de nombre y beneficios.</p>
+</div></section>
+<main class="container"><div id="items" class="grid"></div></main>
+<footer class="footer">© LimaCity RP</footer>
+<script>
+(async ()=>{
+  const token = localStorage.getItem('access_token') || '';
+  const meRes = await fetch('/api/auth/me', { headers: token ? { 'Authorization':'Bearer '+token } : {} });
+  const { user } = await meRes.json();
+  const btnAdmin = document.getElementById('btn-admin');
+  const btnLogin = document.getElementById('btn-login');
+  const badge = document.getElementById('badge-admin');
+  if (user) { btnLogin.style.display='none'; if((user.roles||[]).includes('admin')) badge.style.display='inline-flex'; if((user.roles||[]).some(r=>r==='admin'||r==='editor')) btnAdmin.style.display='inline-flex'; }
+  else { btnLogin.style.display='inline-flex'; }
+
+  const r = await fetch('/api/store/list');
+  const { items } = await r.json();
+  const root = document.getElementById('items'); root.innerHTML='';
+  for(const it of (items||[])){
+    const el=document.createElement('div'); el.className='card';
+    el.innerHTML = `<div class="kicker">${it.category||'General'}</div><h3>${it.name}</h3><p class="muted">${it.description||''}</p><p><b>S/. ${it.price_soles??it.price??0}</b></p>
+      <button class="btn btn-primary" data-id="${it.id}">Comprar</button>`;
+    root.appendChild(el);
+  }
+  root.addEventListener('click', async (e)=>{
+    if(e.target.matches('button[data-id]')){
+      const id = e.target.getAttribute('data-id');
+      const t = localStorage.getItem('access_token')||'';
+      const rr = await fetch('/api/store/buy', { method:'POST', headers: {'Content-Type':'application/json','Authorization': t?('Bearer '+t):''}, body: JSON.stringify({ id }) });
+      const data = await rr.json();
+      if(!rr.ok){ alert(data.error||'Error'); return; }
+      alert('Compra registrada (demo).');
+    }
+  });
+})();
+</script>
+</body></html>

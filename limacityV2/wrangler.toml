@@ -1,0 +1,13 @@
+name = "limacity"
+compatibility_date = "2025-11-02"
+pages_build_output_dir = "./public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "limacity_db"
+database_id = "RELLENA_DESPUES"
+
+[vars]
+JWT_ISSUER = "limacity"
+JWT_AUDIENCE = "limacity-users"
+JWT_SECRET = "CAMBIA_ESTE_SECRETO_LARGO"

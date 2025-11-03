@@ -1,0 +1,38 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Normativas — LimaCity RP</title><link rel="stylesheet" href="/assets/styles.css"></head><body>
+<header><div class="nav container">
+  <div class="brand"><span class="dot"></span><span>LimaCity RP</span></div>
+  <div class="actions">
+    <a class="btn" href="/normativas.html">Ver normativas</a>
+    <a class="btn" href="/tienda.html">Tienda</a>
+    <a class="btn" href="/miembros.html">Miembros</a>
+    <a class="btn" href="https://discord.gg/" target="_blank" rel="noopener">Discord</a>
+    <span id="badge-admin" class="badge" style="display:none;">👑 Admin</span>
+    <a id="btn-admin" class="btn" href="/dashboard.html" style="display:none">Panel admin</a>
+    <a id="btn-login" class="btn btn-primary" href="/login.html" style="display:none">Iniciar sesión</a>
+</div>
+</div></header>
+<main class="container">
+  <section class="section">
+    <h1>Normativas</h1>
+    <p class="muted">Consulta el reglamento oficial del servidor.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+      <a class="btn btn-primary" href="/uploads/normativas.pdf" target="_blank" rel="noopener">📄 Descargar PDF</a>
+      <a class="btn" href="/uploads/normativas.pdf" target="_blank" rel="noopener">Vista rápida</a>
+    </div>
+  </section>
+</main>
+<footer class="footer">© LimaCity RP</footer>
+<script>
+(async ()=>{
+  const token = localStorage.getItem('access_token') || '';
+  const meRes = await fetch('/api/auth/me', { headers: token ? { 'Authorization':'Bearer '+token } : {} });
+  const { user } = await meRes.json();
+  const btnAdmin = document.getElementById('btn-admin');
+  const btnLogin = document.getElementById('btn-login');
+  if (user) { btnLogin.style.display='none'; if((user.roles||[]).some(r=>'admin'===r||'editor'===r)) btnAdmin.style.display='inline-flex'; }
+  else { btnLogin.style.display='inline-flex'; }
+})();
+</script>
+</body></html>

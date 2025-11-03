@@ -1,0 +1,52 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Panel — LimaCity RP</title><link rel="stylesheet" href="/assets/styles.css"></head><body>
+<header><div class="nav container">
+  <div class="brand"><span class="dot"></span><span>Panel de administración</span></div>
+  <div class="actions">
+    <a class="btn" href="/">Inicio</a>
+    <a class="btn" href="/tienda.html">Tienda</a>
+    <a class="btn" href="/miembros.html">Miembros</a>
+    <button class="btn" id="logout">Salir</button>
+  </div>
+</div></header>
+<main class="container">
+<section class="section"><h2>Crear noticia</h2>
+  <div class="grid" style="grid-template-columns:1fr">
+    <div><label>Título</label><input id="title" placeholder="Título de la noticia"></div>
+    <div><label>Contenido</label><textarea id="body" rows="6" placeholder="Contenido"></textarea></div>
+    <div><button class="btn btn-primary" id="create">Guardar borrador</button></div>
+  </div>
+</section>
+<section class="section"><h2>Borradores / Mis noticias</h2>
+  <table class="table" id="mine"><thead><tr><th>Título</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody></tbody></table>
+  <p class="muted">Roles <b>editor</b> o <b>admin</b> pueden publicar.</p>
+</section>
+</main><footer class="footer">© LimaCity RP</footer>
+<script>
+let token=localStorage.getItem('access_token');
+async function me(){const r=await fetch('/api/auth/me',{headers:token?{'Authorization':'Bearer '+token}:{}});const {user}=await r.json();if(!user){location.href='/login.html';return;}window.user=user;} me();
+document.getElementById('logout').onclick=()=>{ localStorage.removeItem('access_token'); location.href='/' }
+document.getElementById('create').onclick=async ()=>{
+  const title=document.getElementById('title').value.trim(); const body=document.getElementById('body').value.trim();
+  const r=await fetch('/api/news/create',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(token||'')},body:JSON.stringify({title,body})});
+  const data=await r.json(); if(!r.ok){alert(data.error||'Error');return;} alert('Borrador creado.'); loadMine();}
+async function loadMine(){
+  const r=await fetch('/api/news/mine',{headers:{'Authorization':'Bearer '+(token||'')}}); const {items}=await r.json();
+  const tbody=document.querySelector('#mine tbody'); tbody.innerHTML='';
+  for(const n of (items||[])){
+    const tr=document.createElement('tr'); const canPublish=(window.user?.perms||[]).includes('news:publish');
+    tr.innerHTML=`<td>${n.title}</td><td>${n.status}</td><td>${new Date(n.created_at).toLocaleString()}</td>
+      <td>${canPublish && n.status!=='published'?`<button data-id="${n.id}" class="btn btn-primary btn-publish">Publicar</button>`:'<span class="muted">—</span>'}</td>`;
+    tbody.appendChild(tr);
+  }
+  document.querySelectorAll('.btn-publish').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      const id=e.target.getAttribute('data-id');
+      const r=await fetch('/api/news/publish',{method:'PUT',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(token||'')},body:JSON.stringify({id})});
+      const data=await r.json(); if(!r.ok){alert(data.error||'Error');return;} alert('Publicado ✔'); loadMine();
+    });
+  });
+}
+loadMine();
+</script></body></html>
